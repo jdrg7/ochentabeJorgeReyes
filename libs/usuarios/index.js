@@ -1,4 +1,5 @@
-const DaoObject = require('../../dao/sqlite/DaoObject');
+const DaoObject = require('../../dao/mongodb/DaoObject');
+const bcrypt = require('bcryptjs');
 module.exports = class Usuario {
   usuarioDao = null;
 
@@ -25,27 +26,23 @@ module.exports = class Usuario {
     nombre,
     avatar,
     password,
-    estado,
-    fchIngreso
+    estado
   }) {
     const result = await this.usuarioDao.insertOne(
       {
         email,
         nombre,
         avatar,
-        password,
-        estado,
-        fchIngreso
+        password: bcrypt.hashSync(password),
+        estado
       }
     );
     return {
       email,
       nombre,
       avatar,
-      password,
       estado,
-      fchIngreso,
-      id: result.lastID
+      result
     };
   };
 
@@ -57,7 +54,15 @@ module.exports = class Usuario {
     return this.usuarioDao.getById({ codigo });
   }
 
-  async updateUsuario({ email,
+  async getUsuarioByEmail({email}) {
+    return this.usuarioDao.getByEmail({email});
+  }
+
+  comparePasswords(rawPassword, dbPassword) {
+    return bcrypt.compareSync(rawPassword, dbPassword);
+  }
+
+  async updateUsuario({ 
     nombre,
     avatar,
     password,
@@ -65,20 +70,17 @@ module.exports = class Usuario {
     codigo
     }) {
     const result = await this.usuarioDao.updateOne({
-      email,
+      codigo,
       nombre,
       avatar,
-      password,
-      estado,
-      codigo });
+      password: bcrypt.hashSync(password),
+      estado });
     return {
-      email,
       nombre,
       avatar,
-      password,
       estado,
       codigo,
-      modified: result.changes
+      modified: result
     }
   }
 
