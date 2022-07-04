@@ -8,4 +8,4 @@ const authorizer = (req, res, next)=>{
   res.status(401).json({"error":"Client request not authorized."});
 }
 
-module.exports.authorizer = authorizer;  module.exports.authorizer = authorizer;
+module.exports.authorizer = authorizer;
